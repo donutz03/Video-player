@@ -1,17 +1,93 @@
+@using VideoPlayer_EasierCS.Models
 @model List<VideoPlayer_EasierCS.Models.Video>
+@{
+    var currentVideo = (Video)ViewBag.CurrentVideo;
+    var nextVideoId = (int)ViewBag.NextVideoId;
+}
 
 <div class="video-player-container">
-    <video id="videoPlayer" controls>
-        <source src="@Model.First().FilePath" type="video/mp4">
+    <video id="videoPlayer" controls autoplay>
+        <source src="@currentVideo.FilePath" type="video/mp4">
         Your browser does not support the video tag.
     </video>
-    
+
+    <div class="playlist-controls">
+        @using (Html.BeginForm("PlayPrevious", "VideoPlayer", FormMethod.Post, new { style = "display: inline;" }))
+        {
+            <input type="hidden" name="currentVideoId" value="@currentVideo.Id" />
+            <button type="submit" class="btn btn-primary">Previous</button>
+        }
+
+        @using (Html.BeginForm("PlayNext", "VideoPlayer", FormMethod.Post, new { style = "display: inline;" }))
+        {
+            <input type="hidden" name="currentVideoId" value="@currentVideo.Id" />
+            <button type="submit" class="btn btn-primary">Next</button>
+        }
+    </div>
+
     <div class="playlist">
         @foreach (var video in Model)
         {
-            <div class="playlist-item" data-video-path="@video.FilePath">
+            <div class="playlist-item @(video.Id == currentVideo.Id ? "active" : "")"
+                 onclick="window.location.href='@Url.Action("Index", new { currentVideoId = video.Id })'">
                 <span>@video.Title</span>
             </div>
         }
     </div>
 </div>
+
+<style>
+    .video-player-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    #videoPlayer {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .playlist {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+    }
+
+    .playlist-item {
+        padding: 10px;
+        margin: 5px 0;
+        cursor: pointer;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .playlist-item:hover {
+        background-color: #e9ecef;
+    }
+
+    .playlist-item.active {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .playlist-controls {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .playlist-controls button {
+        margin: 0 5px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var video = document.getElementById('videoPlayer');
+        var nextVideoId = @nextVideoId;
+
+        video.addEventListener('ended', function() {
+            window.location.href = '@Url.Action("Index", "VideoPlayer")?currentVideoId=' + nextVideoId;
+        });
+    });
+</script>
