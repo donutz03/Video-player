@@ -1,0 +1,17 @@
+@model List<VideoPlayer_EasierCS.Models.Video>
+
+<div class="video-player-container">
+    <video id="videoPlayer" controls>
+        <source src="@Model.First().FilePath" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    
+    <div class="playlist">
+        @foreach (var video in Model)
+        {
+            <div class="playlist-item" data-video-path="@video.FilePath">
+                <span>@video.Title</span>
+            </div>
+        }
+    </div>
+</div>
