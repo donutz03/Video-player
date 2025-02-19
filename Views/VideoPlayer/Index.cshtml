@@ -210,45 +210,48 @@
             }
         });
 
-        document.addEventListener('mouseup', function() {
-            if (!draggingElement) return;
+            document.addEventListener('mouseup', async function() {
+                if (!draggingElement) return;
 
-            const hoverItem = document.querySelector('.drag-over');
-            if (hoverItem) {
-                const playlist = document.getElementById('videoPlaylist');
-                const items = [...playlist.getElementsByClassName('playlist-item')];
+                const hoverItem = document.querySelector('.drag-over');
+                if (hoverItem) {
+                    const playlist = document.getElementById('videoPlaylist');
+                    const items = [...playlist.getElementsByClassName('playlist-item')];
 
-                // Remove the dragging element from its current position
-                const oldIndex = items.indexOf(draggingElement);
-                const newIndex = items.indexOf(hoverItem);
+                    if (items.indexOf(draggingElement) < items.indexOf(hoverItem)) {
+                        hoverItem.parentNode.insertBefore(draggingElement, hoverItem.nextSibling);
+                    } else {
+                        hoverItem.parentNode.insertBefore(draggingElement, hoverItem);
+                    }
 
-                // Update order in DOM
-                if (oldIndex < newIndex) {
-                    hoverItem.parentNode.insertBefore(draggingElement, hoverItem.nextSibling);
-                } else {
-                    hoverItem.parentNode.insertBefore(draggingElement, hoverItem);
+                    const updates = [...playlist.getElementsByClassName('playlist-item')].map((item, index) => ({
+                        id: parseInt(item.dataset.id),
+                        newOrder: index
+                    }));
+
+                    try {
+                        const response = await fetch('@Url.Action("UpdateOrder", "VideoPlayer")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(updates)
+                        });
+
+                        const result = await response.json();
+                        if (!result.success) {
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Error updating order:', error);
+                        window.location.reload();
+                    }
                 }
 
-                // Update order indices and send to server
-                const updates = items.map((item, index) => ({
-                    id: parseInt(item.dataset.id),
-                    newOrder: index
-                }));
-
-                fetch('@Url.Action("UpdateOrder", "VideoPlayer")', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(updates)
-                });
-            }
-
-            // Clean up
-            draggingElement.classList.remove('dragging');
-            document.querySelector('.drag-over')?.classList.remove('drag-over');
-            draggingElement = null;
-        });
+                draggingElement.classList.remove('dragging');
+                document.querySelector('.drag-over')?.classList.remove('drag-over');
+                draggingElement = null;
+            });
     });
 
     function deleteVideo(id) {

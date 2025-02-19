@@ -7,7 +7,7 @@ namespace VideoPlayer_EasierCS.Controllers;
 
 public class VideoPlayerController : Controller
 {
-    private readonly List<Video> _videos;
+    private List<Video> _videos;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly string _mediaFolder = "media";
 
@@ -164,26 +164,33 @@ public class VideoPlayerController : Controller
     [HttpPost]
     public IActionResult UpdateOrder([FromBody] List<VideoOrderUpdate> updates)
     {
-        foreach (var update in updates)
+        try 
         {
-            var video = _videos.FirstOrDefault(v => v.Id == update.Id);
-            if (video != null)
+            foreach (var update in updates)
             {
-                video.OrderIndex = update.NewOrder;
+                var video = _videos.FirstOrDefault(v => v.Id == update.Id);
+                if (video != null)
+                {
+                    video.OrderIndex = update.NewOrder;
+                }
             }
-        }
         
-        SaveVideos();
-        return Json(new { success = true });
+            _videos = _videos.OrderBy(v => v.OrderIndex).ToList();
+        
+            SaveVideos();
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
     }
-    
     [HttpPost]
-    public IActionResult DeleteVideo(int id)
+    public IActionResult DeleteVideo([FromBody] DeleteVideoRequest request)
     {
-        var video = _videos.FirstOrDefault(v => v.Id == id);
+        var video = _videos.FirstOrDefault(v => v.Id == request.id);
         if (video != null)
         {
-            // Delete the physical file
             var filePath = Path.Combine(_webHostEnvironment.WebRootPath, video.FilePath.TrimStart('/'));
             if (System.IO.File.Exists(filePath))
             {
@@ -196,11 +203,11 @@ public class VideoPlayerController : Controller
             {
                 orderedVideos[i].OrderIndex = i;
             }
-            
+        
             SaveVideos();
             return Json(new { success = true });
         }
-        
+    
         return Json(new { success = false, message = "Video not found" });
     }
 }
