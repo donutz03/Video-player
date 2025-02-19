@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using VideoPlayer_EasierCS.Helpers;
 using VideoPlayer_EasierCS.Models;
 
 namespace VideoPlayer_EasierCS.Controllers;
@@ -158,5 +159,48 @@ public class VideoPlayerController : Controller
         {
             return BadRequest($"Error uploading file: {ex.Message}");
         }
+    }
+    
+    [HttpPost]
+    public IActionResult UpdateOrder([FromBody] List<VideoOrderUpdate> updates)
+    {
+        foreach (var update in updates)
+        {
+            var video = _videos.FirstOrDefault(v => v.Id == update.Id);
+            if (video != null)
+            {
+                video.OrderIndex = update.NewOrder;
+            }
+        }
+        
+        SaveVideos();
+        return Json(new { success = true });
+    }
+    
+    [HttpPost]
+    public IActionResult DeleteVideo(int id)
+    {
+        var video = _videos.FirstOrDefault(v => v.Id == id);
+        if (video != null)
+        {
+            // Delete the physical file
+            var filePath = Path.Combine(_webHostEnvironment.WebRootPath, video.FilePath.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            _videos.Remove(video);
+            var orderedVideos = _videos.OrderBy(v => v.OrderIndex).ToList();
+            for (int i = 0; i < orderedVideos.Count; i++)
+            {
+                orderedVideos[i].OrderIndex = i;
+            }
+            
+            SaveVideos();
+            return Json(new { success = true });
+        }
+        
+        return Json(new { success = false, message = "Video not found" });
     }
 }
