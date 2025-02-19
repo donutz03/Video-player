@@ -10,21 +10,47 @@
         <source src="@currentVideo.FilePath" type="video/mp4">
         Your browser does not support the video tag.
     </video>
+    
+    <!-- Upload Section -->
+    <div class="upload-section" 
+         ondragover="event.preventDefault()"
+         ondrop="handleDrop(event)">
+        
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+            <input type="file" 
+                   id="videoFile" 
+                   name="file" 
+                   accept="video/*" 
+                   style="display: none"
+                   onchange="handleFileSelect(this)" />
+            
+            <button type="button" 
+                    onclick="document.getElementById('videoFile').click()"
+                    class="btn btn-primary">
+                Select Video
+            </button>
+        </form>
+        
+        <div class="drop-zone">
+            Drag and drop video files here
+        </div>
+    </div>
 
+    <!-- Rest of the existing playlist code -->
     <div class="playlist-controls">
         @using (Html.BeginForm("PlayPrevious", "VideoPlayer", FormMethod.Post, new { style = "display: inline;" }))
         {
             <input type="hidden" name="currentVideoId" value="@currentVideo.Id" />
             <button type="submit" class="btn btn-primary">Previous</button>
         }
-
+        
         @using (Html.BeginForm("PlayNext", "VideoPlayer", FormMethod.Post, new { style = "display: inline;" }))
         {
             <input type="hidden" name="currentVideoId" value="@currentVideo.Id" />
             <button type="submit" class="btn btn-primary">Next</button>
         }
     </div>
-
+    
     <div class="playlist">
         @foreach (var video in Model)
         {
@@ -89,5 +115,55 @@
         video.addEventListener('ended', function() {
             window.location.href = '@Url.Action("Index", "VideoPlayer")?currentVideoId=' + nextVideoId;
         });
+    });
+
+
+        async function uploadFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+        const response = await fetch('@Url.Action("UploadVideo", "VideoPlayer")', {
+        method: 'POST',
+        body: formData
+    });
+
+        if (!response.ok) {
+        throw new Error('Upload failed');
+    }
+
+        const result = await response.json();
+        if (result.success) {
+        window.location.reload();
+    }
+    } catch (error) {
+        alert('Error uploading file: ' + error.message);
+    }
+    }
+
+        function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+        uploadFile(input.files[0]);
+    }
+    }
+
+        function handleDrop(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('drag-over');
+
+        const files = event.dataTransfer.files;
+        if (files && files[0]) {
+        uploadFile(files[0]);
+    }
+    }
+
+        document.querySelector('.drop-zone').addEventListener('dragenter', function(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+
+        document.querySelector('.drop-zone').addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
     });
 </script>
