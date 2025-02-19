@@ -1,4 +1,3 @@
-using VideoPlayer_EasierCS.Components;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();

@@ -125,27 +125,22 @@ public class VideoPlayerController : Controller
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded");
 
-        // Verifică dacă fișierul este video
         if (!file.ContentType.StartsWith("video/"))
             return BadRequest("File must be a video");
 
         try
         {
-            // Creează directorul media dacă nu există
             var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, _mediaFolder);
             Directory.CreateDirectory(uploadsFolder);
 
-            // Generează un nume unic pentru fișier
             var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            // Salvează fișierul
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // Adaugă video în listă
             var video = new Video
             {
                 Id = _videos.Count > 0 ? _videos.Max(v => v.Id) + 1 : 1,
