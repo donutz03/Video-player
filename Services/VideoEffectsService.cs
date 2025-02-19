@@ -9,7 +9,7 @@ namespace VideoPlayer_EasierCS.Services
             {
                 new() { Id = 1, Name = "Grayscale", Description = "Convert video to grayscale" },
                 new() { Id = 2, Name = "Sepia", Description = "Apply sepia tone effect" },
-                new() { Id = 3, Name = "Invert", Description = "Invert video colors" }
+                new() { Id = 3, Name = "Invert", Description = "Invert video colors" },
             };
         }
     }

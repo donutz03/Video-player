@@ -13,9 +13,11 @@ class VideoEffects {
 
     setupCanvas() {
         this.video.addEventListener('loadedmetadata', () => {
+            const videoRect = this.video.getBoundingClientRect();
             this.canvas.width = this.video.videoWidth;
             this.canvas.height = this.video.videoHeight;
-            this.video.play().catch(e => console.log('Error playing video:', e));
+            this.canvas.style.width = videoRect.width + 'px';
+            this.canvas.style.height = videoRect.height + 'px';
         });
     }
 
@@ -76,6 +78,9 @@ class VideoEffects {
                     this.applyInvert(pixels);
                     break;
             }
+
+
+            this.ctx.putImageData(imageData, 0, 0);
             
         }
 
