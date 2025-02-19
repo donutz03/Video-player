@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using VideoPlayer_EasierCS.Helpers;
 using VideoPlayer_EasierCS.Models;
+using VideoPlayer_EasierCS.Services;
 
 namespace VideoPlayer_EasierCS.Controllers;
 
@@ -10,10 +11,14 @@ public class VideoPlayerController : Controller
     private List<Video> _videos;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly string _mediaFolder = "media";
+    private readonly VideoEffectService _effectService;
 
-    public VideoPlayerController(IWebHostEnvironment webHostEnvironment)
+
+    public VideoPlayerController(IWebHostEnvironment webHostEnvironment, 
+        VideoEffectService effectService)
     {
         _webHostEnvironment = webHostEnvironment;
+        _effectService = effectService;
         
         _videos = LoadVideos();
         
@@ -70,9 +75,10 @@ public class VideoPlayerController : Controller
             ? orderedVideos[currentIndex + 1].Id 
             : orderedVideos.First().Id;
             
+        ViewBag.AvailableEffects = _effectService.GetAvailableEffects();
+        
         return View(orderedVideos);
     }
-
     [HttpPost]
     public IActionResult PlayNext(int currentVideoId)
     {

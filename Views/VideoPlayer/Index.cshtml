@@ -6,30 +6,48 @@
 }
 
 <div class="video-player-container">
-    <video id="videoPlayer" controls autoplay>
-        <source src="@currentVideo.FilePath" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
     
-    <div class="upload-section" 
+    <div class="video-wrapper">
+        <video id="sourceVideo" style="display: none;" autoplay>
+            <source src="@currentVideo.FilePath" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <canvas id="videoCanvas" controls></canvas>
+    </div>
+
+    <div class="effects-panel">
+        <h4>Video Effects</h4>
+        <div class="effects-list">
+            <button class="effect-button" onclick="videoEffects.setEffect(0)">No Effect</button>
+            @foreach (var effect in ViewBag.AvailableEffects)
+            {
+                <button class="effect-button" onclick="videoEffects.setEffect(@effect.Id)"
+                        title="@effect.Description">
+                    @effect.Name
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="upload-section"
          ondragover="event.preventDefault()"
          ondrop="handleDrop(event)">
-        
+
         <form id="uploadForm" method="post" enctype="multipart/form-data">
-            <input type="file" 
-                   id="videoFile" 
-                   name="file" 
-                   accept="video/*" 
+            <input type="file"
+                   id="videoFile"
+                   name="file"
+                   accept="video/*"
                    style="display: none"
-                   onchange="handleFileSelect(this)" />
-            
-            <button type="button" 
+                   onchange="handleFileSelect(this)"/>
+
+            <button type="button"
                     onclick="document.getElementById('videoFile').click()"
                     class="btn btn-primary">
                 Select Video
             </button>
         </form>
-        
+
         <div class="drop-zone">
             Drag and drop video files here
         </div>
@@ -38,17 +56,17 @@
     <div class="playlist-controls">
         @using (Html.BeginForm("PlayPrevious", "VideoPlayer", FormMethod.Post, new { style = "display: inline;" }))
         {
-            <input type="hidden" name="currentVideoId" value="@currentVideo.Id" />
+            <input type="hidden" name="currentVideoId" value="@currentVideo.Id"/>
             <button type="submit" class="btn btn-primary">Previous</button>
         }
-        
+
         @using (Html.BeginForm("PlayNext", "VideoPlayer", FormMethod.Post, new { style = "display: inline;" }))
         {
-            <input type="hidden" name="currentVideoId" value="@currentVideo.Id" />
+            <input type="hidden" name="currentVideoId" value="@currentVideo.Id"/>
             <button type="submit" class="btn btn-primary">Next</button>
         }
     </div>
-    
+
     <div class="playlist" id="videoPlaylist">
         @foreach (var video in Model)
         {
@@ -109,17 +127,55 @@
     .playlist-item.drag-over {
         border-top: 2px solid #007bff;
     }
+
+    .video-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        background: #000;
+    }
+
+    #videoCanvas {
+        width: 100%;
+        height: auto;
+    }
+
+    .effects-panel {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 4px;
+    }
+
+    .effects-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .effect-button {
+        padding: 0.5rem 1rem;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .effect-button:hover {
+        background: #0056b3;
+    }
 </style>
+<script src="/js/VideoEffects.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let video = document.getElementById('videoPlayer');
-        let nextVideoId = @nextVideoId;
-
-        video.addEventListener('ended', function() {
-            window.location.href = '@Url.Action("Index", "VideoPlayer")?currentVideoId=' + nextVideoId;
-        });
-    });
+  
 
 
         async function uploadFile(file) {
@@ -270,5 +326,19 @@
                 });
         }
     }
- 
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('sourceVideo');
+            const canvas = document.getElementById('videoCanvas');
+            let nextVideoId = @nextVideoId;
+
+            video.addEventListener('ended', function() {
+                window.location.href = '@Url.Action("Index", "VideoPlayer")?currentVideoId=' + nextVideoId;
+            });
+
+            window.videoEffects = new VideoEffects(video, canvas);
+            //video.play();
+
+
+        });
 </script>
