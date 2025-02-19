@@ -113,8 +113,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var video = document.getElementById('videoPlayer');
-        var nextVideoId = @nextVideoId;
+        let video = document.getElementById('videoPlayer');
+        let nextVideoId = @nextVideoId;
 
         video.addEventListener('ended', function() {
             window.location.href = '@Url.Action("Index", "VideoPlayer")?currentVideoId=' + nextVideoId;
@@ -184,7 +184,6 @@
                 draggingElement = item;
                 item.classList.add('dragging');
 
-                // Prevent text selection during drag
                 e.preventDefault();
             });
         }
@@ -195,10 +194,8 @@
             const playlist = document.getElementById('videoPlaylist');
             const items = [...playlist.getElementsByClassName('playlist-item')];
 
-            // Remove existing drag-over class
             items.forEach(item => item.classList.remove('drag-over'));
 
-            // Find the item we're hovering over
             const hoverItem = items.find(item => {
                 if (item === draggingElement) return false;
                 const rect = item.getBoundingClientRect();
@@ -273,4 +270,5 @@
                 });
         }
     }
+ 
 </script>
