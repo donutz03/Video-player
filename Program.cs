@@ -4,6 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<VideoEffectService>();
+builder.Services.AddSingleton<CanvasService>();
+
 
 
 var app = builder.Build();
