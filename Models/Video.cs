@@ -7,4 +7,8 @@ public class Video
     public string FilePath { get; set; }
     public string SubtitlesPath { get; set; }
     public int OrderIndex { get; set; }
+    
+    public int CollectionId { get; set; }
+    public DateTime UploadedAt { get; set; }
+    public string ThumbnailPath { get; set; }
 }
