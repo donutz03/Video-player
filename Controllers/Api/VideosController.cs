@@ -2,67 +2,40 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using VideoPlayer_EasierCS.Helpers;
 using VideoPlayer_EasierCS.Models;
-using VideoPlayer_EasierCS.Services;
 
-namespace VideoPlayer_EasierCS.Controllers;
+namespace VideoPlayer_EasierCS.Controllers.Api;
 
-public class VideoPlayerController : Controller
+
+
+[Route("api/[controller]")]
+[ApiController]
+public class VideosController : Controller
 {
     private List<Video> _videos;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly string _mediaFolder = "media";
-    private readonly VideoEffectService _effectService;
+    private readonly string _thumbnailFolder = "thumbnails";
 
 
-    public VideoPlayerController(IWebHostEnvironment webHostEnvironment, 
-        VideoEffectService effectService)
+    public VideosController(IWebHostEnvironment webHostEnvironment)
     {
         _webHostEnvironment = webHostEnvironment;
-        _effectService = effectService;
-        
         _videos = LoadVideos();
-        
-        if (!_videos.Any())
-        {
-            _videos = new List<Video>
-            {
-                new Video 
-                { 
-                    Id = 1, 
-                    Title = "Video 1", 
-                    FilePath = "/media/video1.mp4",
-                    SubtitlesPath = "/media/subtitles1.json",
-                    OrderIndex = 0
-                },
-                new Video 
-                { 
-                    Id = 2, 
-                    Title = "Video 2", 
-                    FilePath = "/media/video2.mp4",
-                    SubtitlesPath = "/media/subtitles2.json",
-                    OrderIndex = 1
-                },
-                new Video 
-                { 
-                    Id = 3, 
-                    Title = "Video 3", 
-                    FilePath = "/media/video3.mp4",
-                    SubtitlesPath = "/media/subtitles3.json",
-                    OrderIndex = 2
-                },
-                new Video 
-                { 
-                    Id = 4, 
-                    Title = "Video 4", 
-                    FilePath = "/media/video4.mp4",
-                    SubtitlesPath = "/media/subtitles4.json",
-                    OrderIndex = 3
-                }
-            };
-            
-            SaveVideos();
-        }
     }
+
+    [HttpGet]
+    public ActionResult<IEnumerable<Video>> GetVideos(int? collectionId = null)
+    {
+        if (collectionId.HasValue)
+        {
+            return Ok(_videos.Where(v => v.CollectionId == collectionId.Value).OrderBy(v => v.OrderIndex).ToList());
+        }
+
+        return Ok(_videos.OrderBy(v => v.OrderIndex).ToList());
+    }
+    
+    
+    
     public IActionResult Index(int? currentVideoId = null)
     {
         var orderedVideos = _videos.OrderBy(v => v.OrderIndex).ToList();

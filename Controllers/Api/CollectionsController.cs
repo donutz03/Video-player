@@ -100,9 +100,38 @@ public class CollectionsController : ControllerBase
             return StatusCode(500, $"Error creating collection: {ex.Message}");
         }
     }
-    
+
     [HttpDelete("{id}")]
-    
+    public ActionResult DeleteCollection(int id)
+    {
+        var collection = _collections.FirstOrDefault(c => c.Id == id);
+        if (collection == null)
+        {
+            return NotFound();
+        }
+
+        if (!collection.ThumbnailPath.EndsWith("dexter.jpg"))
+        {
+            var thumbnailPath = Path.Combine(_webHostEnvironment.WebRootPath, collection.ThumbnailPath.TrimStart('/'));
+            if (System.IO.File.Exists(thumbnailPath))
+            {
+                System.IO.File.Delete(thumbnailPath);
+            }
+        }
+
+        _collections.Remove(collection);
+        SaveCollections();
+
+        return NoContent();
+    }
+
+    [HttpGet("{id}/videos")]
+    public ActionResult<IEnumerable<Video>> GetCollectionVideos(int id)
+    {
+        var videoController = new VideosController(_webHostEnvironment);
+        var videos = videoController.GetVideos().Where(v => v.CollectionId == id).OrderBy(v => v.OrderIndex).ToList();
+        return Ok(videos);
+    }
 
     private void SaveCollections()
     {

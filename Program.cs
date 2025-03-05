@@ -25,6 +25,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=VideoPlayer}/{action=Index}/{id?}");
+    pattern: "{controller=Videos}/{action=Index}/{id?}");
 
 app.Run();
