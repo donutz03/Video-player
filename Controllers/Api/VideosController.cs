@@ -33,8 +33,50 @@ public class VideosController : Controller
 
         return Ok(_videos.OrderBy(v => v.OrderIndex).ToList());
     }
-    
-    
+
+    [HttpGet("{id")]
+    public ActionResult<Video> GetVideo(int id)
+    {
+        var video = _videos.FirstOrDefault(v => v.Id == id);
+        if (video == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(video);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Video>> UploadVideo([FromForm] IFormFile file, [FromForm] int collectionid)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded");
+        }
+
+        if (!file.ContentType.StartsWith("video/"))
+        {
+            return BadRequest("File must be a video");
+        }
+
+        try
+        {
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, _mediaFolder);
+            Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            string thumbnailPath = "/thumbnails/video-default.jpg";
+            
+            //TODO: here
+        }
+    }
     
     public IActionResult Index(int? currentVideoId = null)
     {
